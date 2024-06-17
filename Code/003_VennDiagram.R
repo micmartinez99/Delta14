@@ -49,7 +49,7 @@ small <- small[rownames(small) %in% common,]
 smallUp <- small[small$log2FoldChange > 1 & small$padj < 0.05, ]
 
 # Genes that are UPREGULATED in the large KO
-largeUp <- large[large$log2FoldChange > 1 & small$padj < 0.05, ]
+largeUp <- large[large$log2FoldChange > 1 & large$padj < 0.05, ]
 
 # How many of these genes are shared between smallUp and largeDown
 intersect(rownames(smallUp), rownames(largeUp))
@@ -62,6 +62,7 @@ a <- list(smUp = smallUp$Symbols,
 A <- ggvenn(a, c("smUp", "lgUp"), show_percentage = FALSE,
                fill_color = c("red", "cyan"), text_size = 12, set_name_size = 10, auto_scale = TRUE) +
   theme(text = element_text(family = "Times New Roman"))
+ggsave("Outputs/003_VennDiagram_Outputs/Figures/KO_Small_KO_Large_Upregulation_Venn_Diagram.tiff", A, width = 10, height = 10, dpi = 300)
 
 
 # Now let's look at the genes that are DOWN in KO small and DOWN in KO large
@@ -108,7 +109,8 @@ smUp$Desc <- mapIds(org.Mm.eg.db, key = smUp$Symbols,
 # Set the rownames
 rownames(smUp) <- smUp$Symbols
 smUp$Symbols <- NULL
-smUp <- smUp[,c(1,2,6,22)]
+smUp <- smUp[,c(1,2,6,21)]
+smUp$Symbols <- rownames(smUp)
 smUp$Group <- c("Up regulated in KO Small")
 
 # Get the genes that are shared
@@ -120,7 +122,8 @@ smallSame$Desc <- mapIds(org.Mm.eg.db, key = smallSame$Symbols,
                     multiVals = "first")
 rownames(smallSame) <- smallSame$Symbols
 smallSame$Symbols <- NULL
-smallSame <- smallSame[,c(1,2,6,22)]
+smallSame <- smallSame[,c(1,2,6,21)]
+smallSame$Symbols <- rownames(smallSame)
 smallSame$Group <- "Up regulated in KO Small and Large"
 
 # Get only the genes exclusively upregulated in the large KO
@@ -137,6 +140,7 @@ lgUp$Desc <- mapIds(org.Mm.eg.db, key = lgUp$Symbols,
 rownames(lgUp) <- lgUp$Symbols
 lgUp$Symbols <- NULL
 lgUp <- lgUp[,c(1,2,6,21)]
+lgUp$Symbols <- rownames(lgUp)
 lgUp$Group <- c("Upregulated in KO Large")
 
 # Combine the results 
