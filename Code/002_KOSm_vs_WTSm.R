@@ -168,61 +168,18 @@ results$Symbols <- trimws(results$Symbols)
 # Save the results as a csv file
 write.csv(results, file = "Outputs/002_KOSm_vs_WTSm_Outputs/DESeq2/KOSm_vs_WTSm_DESeq2_Results_IGs_Removed.csv")
 
-#################################################################################
-#----- Prepare Log2 TPMs for heatmap analysis
-
-# Create a data subdirectory to hold TPM values for this comparison
-tpmDir <- paste("Data_Files/TPM_Values")
-if (!dir.exists(tpmDir)) {
-  dir.create(tpmDir)
-}
-compDir <- paste(tpmDir, "KOSm_vs_WTSm_TPMs", sep = "/")
-if (!dir.exists(compDir)) {
-  dir.create(compDir)
-}
-
-# Read in the mmu gene lengths
-lengths <- read.csv("Data_Files/Mmu_Gene_Lengths/Mus_musculus_exon_lengths_in_BP.csv")
-rownames(lengths) <- lengths$X
-
-# Get ENSEMBL gene IDs
-counts$ENSEMBL <- gsub("^(.*?)\\s-.*", "\\1", rownames(counts))
-rownames(counts) <- counts$ENSEMBL
-counts$ENSEMBL <- NULL
-
-# Take the gene lengths for the all the genes in our counts data
-genes <- rownames(counts)
-lengths <- lengths[rownames(lengths) %in% genes,]
-
-# Convert each gene length to KBP
-kb <- lengths[,2] / 1000
-
-# Divide each gene by it's length in KBP
-rpk <- sweep(counts[,1:ncol(counts)], 1, kb, FUN="/")
-
-# Sum up all of the RPKs for a sample
-total_rpk <- colSums(rpk[,1:ncol(rpk)])
-total_rpk_mill <- total_rpk/1000000
-
-# Divide the RPK values by the total_rpk_mill (per million) scaling factor
-tpm <- sweep(rpk[,1:ncol(rpk)], 2, total_rpk_mill, FUN="/")
-
-# Add a small constant
-tpm <- tpm + 0.01
-
-# Log transform the tpm values
-logTPM <- as.data.frame(t(apply(tpm,1, log2)))
-
-# Get gene symbols
-logTPM$Symbols <- mapIds(org.Mm.eg.db, key = rownames(logTPM),
-                         column = "SYMBOL", keytype = "ENSEMBL",
-                         multiVals = "first")
-
-# Save TPM values as a csv
-write.csv(logTPM, file = "Data_Files/TPM_Values/KOSm_vs_WTSm_TPMs/KOSm_vs_WTSm_TPM_Data.csv")
+# Unhash this line if you are editing figures
+results <- read.csv("Outputs/002_KOSm_vs_WTSm_Outputs/DESeq2/KOSm_vs_WTSm_DESeq2_Results_IGs_Removed.csv")
 
 #################################################################################
 #----- Heatmap analysis
+
+# Read in the log2(tpm) values
+logTPM <- read.csv("Data_Files/TPM_Values/Log2_Transformed_TPM_Values_Delta14_project.csv") %>%
+  column_to_rownames(var = "X")
+
+# Get gene symbols
+logTPM$Symbols <- trimws(gsub("^[^-]+-(.*)$", "\\1", rownames(logTPM)))
 
 # Use the results file to order results by log2FC
 results <- results[order(results$log2FoldChange, decreasing = TRUE),]
@@ -238,9 +195,12 @@ logTPM <- logTPM[logTPM$Symbols %in% topBottom,]
 rownames(logTPM) <- logTPM$Symbols
 logTPM$Symbols <- NULL
 
+# Filter TPMs to only be samples for this comparison
+meta <- metadata[metadata$Group == "C" | metadata$Group == "A",]$SampleID
+logTPM <- logTPM[,colnames(logTPM) %in% meta]
+
 # Get the dataframe in the proper order
 logTPM <- logTPM[topBottom,]
-
 # Calculate Z-score of the logTPMs
 cal_z_score <- function(x){
   (x - mean(x)) / sd(x)

@@ -180,8 +180,6 @@ logTPM <- read.csv("Data_Files/TPM_Values/Log2_Transformed_TPM_Values_Delta14_pr
 # Get gene symbols
 logTPM$Symbols <- trimws(gsub("^[^-]+-(.*)$", "\\1", rownames(logTPM)))
 
-
-
 # Use the results file to order results by log2FC
 results <- results[order(results$log2FoldChange, decreasing = TRUE),]
 
