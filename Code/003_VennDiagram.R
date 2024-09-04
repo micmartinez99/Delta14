@@ -64,6 +64,7 @@ A <- ggvenn(a, c("smUp", "lgUp"), show_percentage = FALSE,
   theme(text = element_text(family = "Times New Roman"))
 ggsave("Outputs/003_VennDiagram_Outputs/Figures/KO_Small_KO_Large_Upregulation_Venn_Diagram.tiff", A, width = 10, height = 10, dpi = 300)
 
+################################################################################
 
 # Now let's look at the genes that are DOWN in KO small and DOWN in KO large
 smallDn <- small[small$log2FoldChange < -1, ]
