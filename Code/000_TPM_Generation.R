@@ -75,12 +75,14 @@ log2TPMs <- function(TPMs) {
 
 # Convert raw, non-normalized counts to TPM values
 tpm_vals <- countToTPM(counts, lengths)
+rownames(tpm_vals) <- genesFormatted
 
 # Save tpm_values as a csv
 write.csv(tpm_vals, file = "Data_Files/TPM_Values/Non_Transformed_TPM_Values_Delta14_Project.csv")
 
 # Log2 transform the tpm values
 logTPMs <- log2TPMs(tpm_vals)
+rownames(logTPMs) <- genesFormatted
 
 # Write the log2 transformed TPM values as a csv (typically would use these for heatmap generation)
 write.csv(logTPMs, file = "Data_Files/TPM_Values/Log2_Transformed_TPM_Values_Delta14_project.csv")
