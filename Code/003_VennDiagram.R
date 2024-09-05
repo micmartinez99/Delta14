@@ -160,6 +160,17 @@ KOvKO <- read.csv("Outputs/004_All_Group_Analysis/DESeq2_Results/KOLarge_vs_KOSm
 KOvKOsmall <- KOvKO[KOvKO$log2FoldChange < -1,]
 KOvKOlarge <- KOvKO[KOvKO$log2FoldChange > 1,]
 
+# Read in the WT vs WT results
+WTvWT <- read.csv("Outputs/005_WTLg_vs_WTSm_Outputs/DESeq2/WTLg_vs_WTSm_DEGs.csv")
+WTvWTsmall <- WTvWT[WTvWT$log2FoldChange < -1,]
+WTvWTlarge <- WTvWT[WTvWT$log2FoldChange > 1,]
+
+common <- intersect(KOvKOlarge$Symbols, WTvWTlarge$Symbols)
+common <- intersect(KOvKOsmall$Symbols, WTvWTsmall$Symbols)
+common <- intersect(KOvKOlarge$Symbols, WTvWTsmall$Symbols)
+common <- intersect(KOvKOsmall$Symbols, WTvWTlarge$Symbols)
+
+
 
 # Upset plot expression matrix
 expressionInput <- c(KO.Large = 471, # Up in KO Large (KO large vs WT large)
@@ -168,16 +179,24 @@ expressionInput <- c(KO.Large = 471, # Up in KO Large (KO large vs WT large)
                      WT.Small = 494, # Down in KO Small (KO Small vs WT Small)
                      KO.Small_Specific = 16, # Genes down regulated in KOLg vs KOSmall,
                      KO.Large_Specific = 10, # Genes up regulated in KOLg vs KOSmall
+                     WT.Large_Specific = 4,
+                     WT.Small_Specific = 51,
                      `KO.Large&KO.Small` = 235,
-                     `WT.Large&WT.Small` = 238)
+                     `WT.Large&WT.Small` = 238,
+                     `KO.Large&WT.Large` = 4,
+                     `KO.Small&WT.Small` = 1,
+                     `KO.large&WT.Small` = 0,
+                     `KO.Small&WT.Large` = 0)
 
 
 # Plot Upset plot
 upsetPlot <- upset(fromExpression(expressionInput),
+                   nsets = 8,
+                   nintersects = 20,
                    order.by = "freq",
                    decreasing = TRUE)
 
-tiff("Outputs/004_All_Group_Analysis/Custom_Figures/UpsetPlot.tiff", width = 8, height = 10, units = "in", res = 300)
+tiff("Outputs/005_WTLg_vs_WTSm_Outputs/Custom_Figures/UpsetPlot.tiff", width = 8, height = 10, units = "in", res = 300)
 draw(upsetPlot)
 dev.off()
 
