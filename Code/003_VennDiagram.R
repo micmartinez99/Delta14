@@ -148,8 +148,38 @@ lgUp$Group <- c("Upregulated in KO Large")
 results <- rbind(rbind(smUp, smallSame), lgUp)
 write.csv(results, file = "Outputs/003_VennDiagram_Outputs/UpInSmallKO_UpInLargeKO_Venn_Results.csv")
 
+################################################################################
+
+# Upset plot showing the common genes
+library(UpSetR)
+
+sameDown <- intersect(largeDn$Symbols, smallDn$Symbols)
+
+# Read in the KO vs KO results
+KOvKO <- read.csv("Outputs/004_All_Group_Analysis/DESeq2_Results/KOLarge_vs_KOSmall_DEGs.csv")
+KOvKOsmall <- KOvKO[KOvKO$log2FoldChange < -1,]
+KOvKOlarge <- KOvKO[KOvKO$log2FoldChange > 1,]
 
 
+# Upset plot expression matrix
+expressionInput <- c(KO.Large = 471, # Up in KO Large (KO large vs WT large)
+                     KO.Small = 340, # Up in KO Small (KO small vs WT small)
+                     WT.Large = 296, # Down in KO Large (KO large vs WT large)
+                     WT.Small = 494, # Down in KO Small (KO Small vs WT Small)
+                     KO.Small_Specific = 16, # Genes down regulated in KOLg vs KOSmall,
+                     KO.Large_Specific = 10, # Genes up regulated in KOLg vs KOSmall
+                     `KO.Large&KO.Small` = 235,
+                     `WT.Large&WT.Small` = 238)
+
+
+# Plot Upset plot
+upsetPlot <- upset(fromExpression(expressionInput),
+                   order.by = "freq",
+                   decreasing = TRUE)
+
+tiff("Outputs/004_All_Group_Analysis/Custom_Figures/UpsetPlot.tiff", width = 8, height = 10, units = "in", res = 300)
+draw(upsetPlot)
+dev.off()
 
 
 
